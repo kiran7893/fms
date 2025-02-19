@@ -1,5 +1,4 @@
 import { SignupForm } from "@/components/forms/signup-form";
-import { connect } from "@/lib/db";
 
 export default function Home() {
   return (

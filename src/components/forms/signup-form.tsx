@@ -1,63 +1,108 @@
 "use client";
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { trpc } from "@/lib/utils/trpc";
+
+interface SignupFormData {
+  name: string;
+  email: string;
+  password: string;
+}
 
 export function SignupForm() {
-  const { register, handleSubmit, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SignupFormData>();
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const mutation = trpc.user.create.useMutation();
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    setTimeout(() => {
-      alert("Account created successfully!");
+    setMessage(null);
+
+    try {
+      await mutation.mutateAsync(data);
+      setMessage("Account created successfully!");
       reset();
-      setIsLoading(false);
-    }, 2000);
-    console.log(data);
+    } catch (error: any) {
+      setMessage(error.message || "Something went wrong.");
+    }
+
+    setIsLoading(false);
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 p-4 border rounded-md shadow-md max-w-md mx-auto"
+      className="max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-xl shadow-lg space-y-6"
     >
+      {message && (
+        <p className="text-center text-sm text-green-600 font-medium">
+          {message}
+        </p>
+      )}
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">Name</label>
+        <label className="block text-sm font-semibold text-gray-700">
+          Name
+        </label>
         <input
           type="text"
-          {...register("name")}
+          {...register("name", { required: "Name is required" })}
           placeholder="Kiran Myadaram"
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
+          className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
+        {errors.name && (
+          <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+        )}
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
+        <label className="block text-sm font-semibold text-gray-700">
+          Email
+        </label>
         <input
           type="email"
-          {...register("email")}
+          {...register("email", { required: "Email is required" })}
           placeholder="kiran@example.com"
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
+          className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
+        {errors.email && (
+          <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+        )}
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-semibold text-gray-700">
           Password
         </label>
         <input
           type="password"
-          {...register("password")}
-          className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
+          {...register("password", {
+            required: "Password is required",
+            minLength: {
+              value: 6,
+              message: "Password must be at least 6 characters",
+            },
+          })}
+          className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
+        {errors.password && (
+          <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+        )}
       </div>
+
       <button
         type="submit"
-        className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+        className="w-full p-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
         disabled={isLoading}
       >
-        {isLoading ? "Creating account..." : "Sign up"}
+        {isLoading ? "Creating account..." : "Sign Up"}
       </button>
     </form>
   );

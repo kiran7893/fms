@@ -4,9 +4,17 @@ import { router, publicProcedure } from "../trpc";
 import { User } from "../models/user";
 
 export const userRouter = router({
-  test: publicProcedure.query(async () => {
-    return {
-      message: "tRPC is working!",
-    };
-  }),
+  create: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        email: z.string().email(),
+        password: z.string().min(6),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const user = new User(input);
+      await user.save();
+      return { message: "User created successfully!" };
+    }),
 });
