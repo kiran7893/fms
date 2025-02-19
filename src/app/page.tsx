@@ -1,9 +1,12 @@
-import Image from "next/image";
+import { SignupForm } from "@/components/forms/signup-form";
 
 export default function Home() {
   return (
-    <div>
-      <h1>Hello World ..!!</h1>
+    <div className="container mx-auto max-w-md py-12">
+      <div className="rounded-lg border p-8 shadow-sm">
+        <h1 className="mb-6 text-2xl font-bold">Create an Account</h1>
+        <SignupForm />
+      </div>
     </div>
   );
 }
